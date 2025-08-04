@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Bell, Shield, Palette, Save, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { getSettings, saveSettings } from '../utils/api';
 
 interface Settings {
   profile: {
@@ -50,19 +51,13 @@ const Settings: React.FC = () => {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/api/user/settings', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data);
-      } else {
-        throw new Error('Failed to fetch settings');
+      
+      if (!token) {
+        throw new Error('No authentication token available');
       }
+      
+      const data = await getSettings(token);
+      setSettings(data);
     } catch (error) {
       console.warn('Backend not available, using default settings:', error);
       // Use default settings when backend is not available
@@ -103,21 +98,14 @@ const Settings: React.FC = () => {
   const handleSaveSettings = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/api/user/settings', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(settings),
-      });
-
-      if (response.ok) {
-        setSaveMessage({ type: 'success', message: 'Settings saved successfully!' });
-        setTimeout(() => setSaveMessage(null), 3000);
-      } else {
-        throw new Error('Failed to save settings');
+      
+      if (!token) {
+        throw new Error('No authentication token available');
       }
+      
+      await saveSettings(token, settings);
+      setSaveMessage({ type: 'success', message: 'Settings saved successfully!' });
+      setTimeout(() => setSaveMessage(null), 3000);
     } catch (error) {
       console.warn('Backend not available, simulating save:', error);
       // Simulate successful save for demo

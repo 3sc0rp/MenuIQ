@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BarChart3, TrendingUp, FileText, Users, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { getDashboardData } from '../utils/api';
 
 interface DashboardStats {
   totalMenus: number;
@@ -72,22 +73,15 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:3001/api/dashboard', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const responseData = await response.json();
-        if (responseData.success) {
-          setData(responseData);
-        } else {
-          throw new Error(responseData.error || 'Failed to fetch dashboard data');
-        }
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+      
+      const responseData = await getDashboardData(token);
+      if (responseData.success) {
+        setData(responseData);
       } else {
-        throw new Error('Failed to fetch dashboard data');
+        throw new Error(responseData.error || 'Failed to fetch dashboard data');
       }
     } catch (error) {
       console.warn('Backend not available, using mock data:', error);

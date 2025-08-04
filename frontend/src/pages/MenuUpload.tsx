@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Upload, Trash2, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { getMenus, uploadMenu, deleteMenu } from '../utils/api';
 
 interface MenuFile {
   id: number;
@@ -57,31 +58,25 @@ const MenuUpload: React.FC = () => {
   const fetchMenus = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/api/menus', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          const formattedMenus = data.menus.map((menu: any) => ({
-            id: menu.id,
-            name: menu.title,
-            date: new Date(menu.createdAt).toLocaleDateString(),
-            status: menu.status,
-            menuId: menu.id,
-            items_count: menu.itemsCount,
-            title: menu.title
-          }));
-          setUploadedFiles(formattedMenus);
-        } else {
-          throw new Error(data.error || 'Failed to fetch menus');
-        }
+      
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+      
+      const data = await getMenus(token);
+      if (data.success) {
+        const formattedMenus = data.menus.map((menu: any) => ({
+          id: menu.id,
+          name: menu.title,
+          date: new Date(menu.createdAt).toLocaleDateString(),
+          status: menu.status,
+          menuId: menu.id,
+          items_count: menu.itemsCount,
+          title: menu.title
+        }));
+        setUploadedFiles(formattedMenus);
       } else {
-        throw new Error('Failed to fetch menus');
+        throw new Error(data.error || 'Failed to fetch menus');
       }
     } catch (error) {
       console.warn('Backend not available, using mock data:', error);
@@ -107,17 +102,15 @@ const MenuUpload: React.FC = () => {
       setLoading(true);
       setUploadMessage(null);
 
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+
       const formData = new FormData();
       formData.append('menu', file);
       formData.append('title', file.name.replace(/\.[^/.]+$/, '')); // Remove file extension for title
 
-      const response = await fetch('http://localhost:3001/api/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      const response = await uploadMenu(token, formData);
 
       if (response.ok) {
         const result = await response.json();
@@ -169,20 +162,13 @@ const MenuUpload: React.FC = () => {
 
   const handleDeleteMenu = async (menuId: number) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/menu/${menuId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        setUploadedFiles(prev => prev.filter(menu => menu.menuId !== menuId));
-        setUploadMessage({ type: 'success', message: 'Menu deleted successfully' });
-      } else {
-        setUploadMessage({ type: 'error', message: 'Failed to delete menu' });
+      if (!token) {
+        throw new Error('No authentication token available');
       }
+
+      await deleteMenu(token, menuId);
+      setUploadedFiles(prev => prev.filter(menu => menu.menuId !== menuId));
+      setUploadMessage({ type: 'success', message: 'Menu deleted successfully' });
     } catch (error) {
       console.warn('Backend not available, simulating delete:', error);
       // Simulate successful delete for demo
