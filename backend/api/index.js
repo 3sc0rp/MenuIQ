@@ -1,14 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
 const app = express();
-const port = 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-frontend-domain.vercel.app'] 
+    : ['http://localhost:3000'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -103,25 +105,21 @@ app.post('/api/upload', upload.single('menu'), (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const title = req.body.title || req.file.originalname.replace(/\.[^/.]+$/, '');
-    
-    // Simulate processing
     const newMenu = {
       id: mockMenus.length + 1,
-      title: title,
+      title: req.body.title || `Menu ${mockMenus.length + 1}`,
       fileName: req.file.originalname,
-      itemsCount: Math.floor(Math.random() * 20) + 5, // Random items count
+      itemsCount: Math.floor(Math.random() * 20) + 5,
       status: "processed",
       createdAt: new Date().toISOString()
     };
 
-    mockMenus.unshift(newMenu);
+    mockMenus.push(newMenu);
 
     res.json({
       success: true,
       message: 'Menu uploaded successfully!',
-      menuId: newMenu.id,
-      itemsCount: newMenu.itemsCount
+      menu: newMenu
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to upload menu' });
@@ -133,7 +131,7 @@ app.delete('/api/menu/:id', (req, res) => {
   try {
     const menuId = parseInt(req.params.id);
     const menuIndex = mockMenus.findIndex(menu => menu.id === menuId);
-    
+
     if (menuIndex === -1) {
       return res.status(404).json({ error: 'Menu not found' });
     }
@@ -266,28 +264,5 @@ app.get('/api/auth/me', (req, res) => {
   }
 });
 
-// Start server
-const server = app.listen(port, '127.0.0.1', () => {
-  console.log(`🚀 MenuIQ API Server running on port ${port}`);
-  console.log(`📊 Health check: http://localhost:${port}/api/health`);
-  console.log(`📈 Dashboard: http://localhost:${port}/api/dashboard`);
-  console.log(`📤 Upload: http://localhost:${port}/api/upload`);
-  console.log(`⚙️ Settings: http://localhost:${port}/api/user/settings`);
-});
-
-server.on('error', (error) => {
-  console.error('Server error:', error);
-});
-
-server.on('listening', () => {
-  console.log(`✅ Server is listening on http://127.0.0.1:${port}`);
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-}); 
+// Export for Vercel
+module.exports = app; 
