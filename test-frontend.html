@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MenuIQ Frontend Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1f2937;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background-color: #374151;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background-color: #065f46; }
+        .error { background-color: #991b1b; }
+        .warning { background-color: #92400e; }
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #2563eb;
+        }
+        .loading {
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MenuIQ Frontend Test</h1>
+        <p>This page tests the frontend functionality and backend connectivity.</p>
+
+        <div class="test-section">
+            <h2>Backend Connectivity Test</h2>
+            <button onclick="testBackend()">Test Backend Connection</button>
+            <div id="backend-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>API Endpoints Test</h2>
+            <button onclick="testHealth()">Test Health Endpoint</button>
+            <button onclick="testDashboard()">Test Dashboard Endpoint</button>
+            <button onclick="testMenus()">Test Menus Endpoint</button>
+            <button onclick="testSettings()">Test Settings Endpoint</button>
+            <div id="api-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Frontend Status</h2>
+            <div id="frontend-status">
+                <div class="status success">✅ Frontend is running</div>
+                <div class="status warning">⚠️ Backend connectivity will be tested</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001';
+
+        async function testBackend() {
+            const statusDiv = document.getElementById('backend-status');
+            statusDiv.innerHTML = '<div class="status loading">Testing backend connection...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    statusDiv.innerHTML = `<div class="status success">✅ Backend is running: ${data.message}</div>`;
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ Backend responded with status: ${response.status}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Backend is not available: ${error.message}</div>`;
+            }
+        }
+
+        async function testHealth() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<div class="status loading">Testing health endpoint...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+                resultsDiv.innerHTML = `<div class="status success">✅ Health endpoint: ${JSON.stringify(data, null, 2)}</div>`;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="status error">❌ Health endpoint failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testDashboard() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<div class="status loading">Testing dashboard endpoint...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/dashboard`, {
+                    headers: {
+                        'Authorization': 'Bearer mock-token',
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await response.json();
+                resultsDiv.innerHTML = `<div class="status success">✅ Dashboard endpoint: ${JSON.stringify(data, null, 2)}</div>`;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="status error">❌ Dashboard endpoint failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testMenus() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<div class="status loading">Testing menus endpoint...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/menus`, {
+                    headers: {
+                        'Authorization': 'Bearer mock-token',
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await response.json();
+                resultsDiv.innerHTML = `<div class="status success">✅ Menus endpoint: ${JSON.stringify(data, null, 2)}</div>`;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="status error">❌ Menus endpoint failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testSettings() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<div class="status loading">Testing settings endpoint...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/user/settings`, {
+                    headers: {
+                        'Authorization': 'Bearer mock-token',
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await response.json();
+                resultsDiv.innerHTML = `<div class="status success">✅ Settings endpoint: ${JSON.stringify(data, null, 2)}</div>`;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="status error">❌ Settings endpoint failed: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-test backend on page load
+        window.onload = function() {
+            setTimeout(testBackend, 1000);
+        };
+    </script>
+</body>
+</html> 
