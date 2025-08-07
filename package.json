@@ -1,0 +1,23 @@
+{
+  "name": "mmenu",
+  "version": "1.0.0",
+  "description": "MenuIQ - AI-driven restaurant menu optimization platform",
+  "scripts": {
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev",
+    "dev:sqlite": "cd backend && npm run dev:sqlite",
+    "dev:supabase": "cd backend && npm run dev:supabase",
+    "build": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "test": "node test-personalized-demo.js",
+    "test:api": "node test-personalized-suggestions.js",
+    "test:api-simple": "node test-api-simple-suggestions.js",
+    "server:working": "node backend/working-server.js",
+    "deploy:render": "echo 'Push to GitHub and deploy via Render dashboard'",
+    "deploy:vercel": "cd frontend && vercel --prod",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+  },
+  "dependencies": {
+    "axios": "^1.11.0"
+  }
+}

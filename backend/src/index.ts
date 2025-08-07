@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import { Pool } from 'pg';
+import { PersonalizedMenuService } from './services/personalizedMenuService';
+import { CustomerPreferences } from './types/menu';
 
 // Load environment variables
 dotenv.config();
@@ -400,6 +402,51 @@ app.post('/api/user/settings', async (req, res) => {
   } catch (error) {
     console.error('Save settings error:', error);
     res.status(500).json({ error: 'Failed to save settings' });
+  }
+});
+
+// Personalized menu suggestions endpoint
+app.post('/api/menu/:id/suggestions', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const preferences: CustomerPreferences = req.body.preferences || {};
+    const limit = req.body.limit || 10;
+    
+    const client = await pool.connect();
+    
+    // Get menu items
+    const itemsResult = await client.query(
+      'SELECT * FROM menu_items WHERE menu_id = $1 ORDER BY sales_count DESC',
+      [id]
+    );
+
+    if (itemsResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json({ error: 'No menu items found' });
+    }
+
+    const menuItems = itemsResult.rows;
+    client.release();
+
+    // Initialize the personalized menu service
+    const personalizedService = new PersonalizedMenuService();
+    
+    // Generate personalized suggestions
+    const suggestions = personalizedService.generatePersonalizedSuggestions(
+      menuItems,
+      preferences,
+      limit
+    );
+
+    res.json({
+      success: true,
+      menuId: id,
+      suggestions
+    });
+
+  } catch (error) {
+    console.error('Personalized suggestions error:', error);
+    res.status(500).json({ error: 'Failed to generate personalized suggestions' });
   }
 });
 

@@ -1,12 +1,17 @@
 // API configuration for different environments
 const getApiBaseUrl = () => {
+  // Use explicit environment variable if set
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
   // In development, use localhost
   if (process.env.NODE_ENV === 'development') {
     return 'http://localhost:3001';
   }
   
-  // In production, use environment variable or fallback
-  return process.env.REACT_APP_API_URL || 'https://your-backend-url.vercel.app';
+  // In production, use Render backend URL
+  return 'https://menuiq-backend.onrender.com';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
@@ -85,4 +90,10 @@ export const saveSettings = (token: string, settings: any) =>
       'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify(settings),
+  });
+
+export const getPersonalizedSuggestions = (menuId: string, preferences: any, limit: number = 10) => 
+  apiRequest(`/api/menu/${menuId}/suggestions`, {
+    method: 'POST',
+    body: JSON.stringify({ preferences, limit }),
   }); 

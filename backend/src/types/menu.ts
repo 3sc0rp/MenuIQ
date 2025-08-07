@@ -72,4 +72,57 @@ export interface MenuInsights {
   recommendations: string[];
   clusters: ItemCluster[];
   actionCounts: ActionCounts;
+}
+
+// Personalized Menu Suggestion Types
+export interface CustomerPreferences {
+  dietary?: string[];
+  preferences?: string[];
+  budget?: 'low' | 'moderate' | 'high' | 'premium';
+  spiceLevel?: 'mild' | 'medium' | 'spicy' | 'very-spicy';
+  cuisine?: string[];
+  mealType?: 'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'appetizer';
+}
+
+export interface GuestFeedback {
+  itemId: number;
+  itemName: string;
+  feedback: string[];
+  rating: number;
+  date: string;
+}
+
+export interface SeasonalTrend {
+  season: string;
+  popularTags: string[];
+  trendingItems: string[];
+  seasonalIngredients: string[];
+}
+
+export interface MenuSuggestion {
+  item: MenuItem;
+  score: number;
+  reasons: string[];
+  notes: string;
+  matchScore: number;
+  priceCategory: 'budget' | 'moderate' | 'premium';
+  dietaryCompliance: string[];
+  preferenceMatch: string[];
+}
+
+export interface PersonalizedMenuResponse {
+  suggestions: MenuSuggestion[];
+  summary: {
+    totalSuggestions: number;
+    averagePrice: number;
+    dietaryOptions: string[];
+    preferenceMatches: string[];
+    budgetRange: string;
+  };
+  insights: {
+    topPerformers: string[];
+    seasonalPicks: string[];
+    crowdFavorites: string[];
+    valueOptions: string[];
+  };
 } 
